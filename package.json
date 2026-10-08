@@ -1,0 +1,17 @@
+{
+  "name": "open-interface-mark",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "description": "纯前端图片区域与接口标注工具",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/serve.mjs --dist",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=24"
+  }
+}
