@@ -4,7 +4,7 @@
 
 OpenInterfaceMark 是纯前端图片区域与接口标注工具，仓库为 `geekheart/OpenInterfaceMark`，在线地址为 `https://geekheart.github.io/OpenInterfaceMark/`。用户导入本地图片，绘制矩形或椭圆，编辑编号与标签，拖动引线，再下载 PNG、JPG、SVG 或可恢复编辑的项目 JSON。
 
-界面以中文为主，使用与 OpenBoxHub 类似的浅色和绿色配色。优先保持标注坐标准确、编辑可撤销、导出完整和文件可重新导入。不要把示例区域描述为自动识别结果，也不要把图片变换描述为生成新像素细节。
+界面默认中文，支持 English，使用与 OpenBoxHub 类似的浅色和绿色配色。优先保持标注坐标准确、编辑可撤销、导出完整和文件可重新导入。不要把示例区域描述为自动识别结果，也不要把图片变换描述为生成新像素细节。
 
 这是独立项目，不依赖 OpenBoxHub 源码、CAD 内核或后端服务。仓库根目录直接包含 `index.html`、`src/`、`scripts/` 和 `.github/`。
 
@@ -22,7 +22,7 @@ pnpm preview --port 4180
 
 - 当前无第三方运行时或开发依赖。使用浏览器 ES 模块和 Node 内置模块，不为简单功能引入框架或构建器。
 - `pnpm test` 使用 Node test runner；交互回归通过 VM 执行 `src/app.js` 的真实事件处理器。
-- `pnpm build` 通过 `scripts/build.mjs` 将 `index.html`、`src/` 和 `public/` 复制到 `dist/`，生成记录版本、提交与标签的 `version.json`。
+- `pnpm build` 通过 `scripts/build.mjs` 将 `index.html`、`src/`、`public/` 和 `LICENSE` 复制到 `dist/`，生成记录版本、提交与标签的 `version.json`。
 - `scripts/serve.mjs` 是本地 HTTP 静态服务器，支持根路径和 `/OpenInterfaceMark/` 子路径；线上只需静态文件。
 - 依赖发生变化时，同步更新锁文件和说明，不提交 `node_modules/` 或 `dist/`。
 
@@ -33,6 +33,7 @@ pnpm preview --port 4180
 | `index.html` | 工作台结构、导入入口、工具栏、属性区域和弹窗 |
 | `src/app.js` | 项目状态、界面渲染、鼠标/键盘手势、历史、字体、文件读取和下载 |
 | `src/core.js` | 无 DOM 的区域运算、坐标变换、引线布局、边界、SVG 与项目校验 |
+| `src/i18n.js` | 中英显式文案、占位参数、URL 语言选择与静态界面绑定 |
 | `src/styles.css` | 桌面三栏、窄屏布局、状态反馈、抓手和拖动光标 |
 | `public/demo-board.png` | 默认开发板示例原图 |
 | `tests/core.test.mjs` | 核心坐标、格式、边界和导出回归 |
@@ -42,6 +43,15 @@ pnpm preview --port 4180
 | `.github/workflows/release.yml` | 标签发布、Pages 部署与 Release 附件 |
 
 新增字段或功能时同步检查项目校验、默认值、界面、历史、导入导出、测试和 README。核心逻辑保持可在 Node 中测试，不直接依赖 DOM；需要真实字宽时通过 `setTextMeasurer` 注入浏览器测量能力。
+
+## 语言与开源许可
+
+- 中文为默认语言，`?lang=en` 直达英文；右上角使用 `language-select` 与指向本仓库的 `github-link`。链接使用可访问名称、`target="_blank"` 和 `rel="noopener noreferrer"`。
+- 静态文案使用显式 `data-i18n` 标记，动态文案使用 `src/i18n.js` 的参数化消息；新增提示、错误、工具提示、弹窗、占位符和无障碍名称必须补齐英文。不得遍历任意 DOM 文本猜测翻译。
+- 语言切换只改变界面与 URL，不改用户标签、文件名、项目格式、标注坐标、历史与视图，不下载远程语言包。正在进行的未完成手势可取消。
+- 保持中文 `README.md` 默认展示，完整 `README.en.md` 与其互链；更新功能和部署步骤时同时维护两份文档。
+- 源码采用根目录 `LICENSE` 的 MIT 许可，构建与发布 ZIP 携带许可。保留既有版权与第三方素材归属，不把用户本地图片或字体纳入源码许可。
+- 语言修改运行测试并检查中英切换、已编辑设计不丢失、导出弹窗、错误提示与窄屏。
 
 ## 纯前端与资源边界
 
@@ -119,8 +129,8 @@ Node VM 使用 DOM、指针捕获与矩阵替身，不能描述为真实浏览�
 - 仓库：`https://github.com/geekheart/OpenInterfaceMark`；默认发布分支：`main`；Pages Source：**GitHub Actions**。
 - `pages.yml` 处理 main 推送、main 手动部署和 PR 验证。PR 不部署；部署内容必须来自验证过的 `dist/`。
 - `release.yml` 接收手动 `tag` 输入或 `v*` / `V*` 标签推送；仅在 main 或 tag 上运行。先验证标签对应源码、测试和构建，再部署同一份 `dist/`；Pages 成功后创建 GitHub Release。
-- 标签必须是 `v` / `V` 加三段正式版本，去掉前缀后与 `package.json` 一致，并提供 `docs/releases/{版本}.md`。发布 V1.0.1 对应 `1.0.1`；已有标签若指向不同提交或已有 Release，工作流拒绝覆盖。
-- Release 附件为 `OpenInterfaceMark-{tag}-site.zip` 和 `SHA256SUMS.txt`，压缩包来自部署使用的同一构建产物，根目录含 `index.html`、`src/`、`public/` 和 `version.json`。GitHub 提供的源码附件对应该标签。
+- 标签必须是 `v` / `V` 加三段正式版本，去掉前缀后与 `package.json` 一致，并提供 `docs/releases/{版本}.md`。发布 V1.0.2 对应 `1.0.2`；已有标签若指向不同提交或已有 Release，工作流拒绝覆盖。
+- Release 附件为 `OpenInterfaceMark-{tag}-site.zip` 和 `SHA256SUMS.txt`，压缩包来自部署使用的同一构建产物，根目录含 `index.html`、`src/`、`public/`、`LICENSE` 和 `version.json`。GitHub 提供的源码附件对应该标签。
 - 日常部署与版本发布共用生产并发组，排队且不取消正在发布的任务，避免同时覆盖站点。`github-pages` environment 允许 main 和发布标签，工作流权限按构建、Pages 和 Release 各自需要最小化。
 - 发布前完成冻结安装、测试、构建和子路径验证；发布后核对 Actions、线上静态资源、默认工作台、下载操作、Release 标签与附件，并对照 `version.json` 中的版本、提交和标签后再报告上线。
 - 不提交构建产物、`release-assets/` 或维护第二套站点代码，不把仅创建标签或 artifact 上传成功描述为完成发布。

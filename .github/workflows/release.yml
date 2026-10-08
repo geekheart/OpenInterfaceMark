@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag matching package.json, for example V1.0.1'
+        description: 'Release tag matching package.json, for example V1.0.2'
         required: true
         type: string
-        default: 'V1.0.1'
+        default: 'V1.0.2'
 
 permissions: {}
 

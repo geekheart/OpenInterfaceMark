@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import vm from 'node:vm';
 import * as core from '../src/core.js';
+import * as i18n from '../src/i18n.js';
 
 const appURL = new URL('../src/app.js', import.meta.url);
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
@@ -11,6 +12,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 // loading for vm.Script; no interaction implementation is copied into this test.
 const appSource = readFileSync(appURL, 'utf8')
   .replace(/^import\s*\{([^}]+)\}\s*from '\.\/core\.js';/, (_, bindings) => `const {${bindings.replace(/\s+as\s+/g, ': ')}} = __core;`)
+  .replace(/import\s*\{([^}]+)\}\s*from '\.\/i18n\.js';/, (_, bindings) => `const {${bindings.replace(/\s+as\s+/g, ': ')}} = __i18n;`)
   .replaceAll('import.meta.url', JSON.stringify(appURL.href));
 
 class Matrix {
@@ -90,14 +92,17 @@ function createHarness() {
     const button = new Element('button'); button.dataset.tool = tool; button.title = tool; tools.push(button);
   }
   doc.body = new Element('body');
+  doc.documentElement = new Element('html');
   doc.createElement = tag => new Element(tag);
   doc.querySelector = selector => selector.startsWith('#') ? nodes.get(selector.slice(1))
     : selector === 'dialog[open]' ? [...nodes.values()].find(node => node.tagName === 'dialog' && node.open) || null : null;
   doc.querySelectorAll = selector => selector.includes('[data-tool]') ? tools : [];
   const window = new Element('window');
+  window.location={href:'http://localhost/OpenInterfaceMark/'};
+  window.history={replaceState(_state,_title,url){window.location.href=String(url);}};
   class TestURL extends URL { static createObjectURL() { return 'blob:test-image'; } static revokeObjectURL() {} }
   const context = vm.createContext({
-    __core: core, document: doc, window, DOMMatrix: Matrix, DOMPoint: Point, URL: TestURL,
+    __core: core, __i18n:i18n, document: doc, window, DOMMatrix: Matrix, DOMPoint: Point, URL: TestURL,
     Blob, atob, structuredClone, crypto: { randomUUID },
     ResizeObserver: class { observe() {} },
     // Initial demo loading is irrelevant to these interactions; the fixture is
@@ -238,4 +243,24 @@ test('右键平移期间滚轮不会重置视图或缩放，结束后滚轮恢�
   assert.deepEqual(h.state().view, before);
   h.canvas.fire('pointerup', { button: 2, buttons: 0 }); h.canvas.fire('wheel', { deltaY: -100, clientX: 150, clientY: 125 });
   assert.ok(h.state().view.width < before.width);
+});
+
+
+test('语言切换保留项目、历史与画布，只更新界面和URL', () => {
+  const h=createHarness(); h.key('ArrowRight'); h.key('+');
+  const before=h.state(); const select=h.nodes.get('language-select');
+  select.value='en';select.fire('change');
+  const after=h.state();
+  assert.deepEqual(after.doc,before.doc);
+  assert.deepEqual(after.view,before.view);
+  assert.equal(after.historyLength,before.historyLength);
+  assert.equal(after.selected,before.selected);
+  assert.equal(h.doc.documentElement.lang,'en');
+  assert.match(h.nodes.get('properties').innerHTML,/Label content/);
+  assert.match(h.nodes.get('properties').innerHTML,/接口/); // Existing user label stays unchanged.
+  assert.match(h.nodes.get('status').textContent,/Loaded/);
+  assert.match(h.window.location.href,/lang=en/);
+  h.key('z',{ctrlKey:true});assert.equal(h.state().doc.regions[0].x,50);
+  select.value='zh-CN';select.fire('change');
+  assert.equal(h.doc.documentElement.lang,'zh-CN');assert.equal(h.nodes.get('status').textContent,'已撤销');
 });

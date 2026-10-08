@@ -1,7 +1,7 @@
 import { cp, mkdir, rm, readFile, writeFile } from 'node:fs/promises';
 await rm(new URL('../dist', import.meta.url), { recursive: true, force: true });
 await mkdir(new URL('../dist', import.meta.url));
-for (const path of ['index.html', 'src', 'public']) {
+for (const path of ['index.html', 'src', 'public', 'LICENSE']) {
   await cp(new URL(`../${path}`, import.meta.url), new URL(`../dist/${path}`, import.meta.url), { recursive: true });
 }
 const { name, version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));

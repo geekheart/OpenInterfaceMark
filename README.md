@@ -1,3 +1,5 @@
+[简体中文](README.md) | [English](README.en.md)
+
 <div align="center">
   <h1>OpenInterfaceMark</h1>
   <p><strong>浏览器里的图片区域与接口标注工具</strong></p>
@@ -19,6 +21,10 @@
 打开页面即可编辑，内置开发板图片与六处示例标注。示例框由手工近似定位，可以继续微调；工具不自动识别接口或填写标签。
 
 图片处理、字体加载与文件生成均在浏览器中完成，无上传接口、账号、数据库或在线字体服务。项目通过 JSON 文件保存与恢复，页面不会使用 localStorage、sessionStorage 或 IndexedDB 保存设计，刷新后回到示例。
+
+页面默认中文，右上角可切换 **English**，也可直接打开[英文工作台](https://geekheart.github.io/OpenInterfaceMark/?lang=en)。语言切换保留设计、撤销记录和视图；用户标签、文件名和导入数据不会被翻译。GitHub 图标可直接打开项目源码。
+
+项目以 [MIT 协议](LICENSE)开源，允许使用、修改与分发，保留版权及许可声明即可。
 
 ## 可以做什么
 
@@ -124,20 +130,20 @@ pnpm preview --port 4180
 
 ### 发布版本
 
-[release.yml](.github/workflows/release.yml) 负责按标签发布。发布 **V1.0.1** 时，先将 `package.json` 的版本设为 `1.0.1`，编写 [版本说明](docs/releases/1.0.1.md)，并把待发布内容提交到 `main`。然后在 Actions 页面选择 **Release** 工作流，在 `main` 上运行，将 `tag` 输入为 `V1.0.1`。
+[release.yml](.github/workflows/release.yml) 负责按标签发布。发布 **V1.0.2** 时，先将 `package.json` 的版本设为 `1.0.2`，编写 [版本说明](docs/releases/1.0.2.md)，并把待发布内容提交到 `main`。然后在 Actions 页面选择 **Release** 工作流，在 `main` 上运行，将 `tag` 输入为 `V1.0.2`。
 
 也可推送 `v*` 或 `V*` 标签触发：
 
 ```bash
-git tag V1.0.1
-git push origin V1.0.1
+git tag V1.0.2
+git push origin V1.0.2
 ```
 
 两种方式选择一种即可。标签必须是 `v` 或 `V` 加三段正式版本，去掉前缀后与 `package.json` 一致，且对应提交包含发布工作流和 `docs/releases/{版本}.md`。已有标签若指向不同提交，或该版本已有 Release，工作流会停止；后续发布使用新版本号。
 
 Release 工作流先测试、构建，再将同一份 `dist/` 部署到 Pages，部署成功后创建 GitHub Release，并附上：
 
-- `OpenInterfaceMark-V1.0.1-site.zip`：压缩包根目录含 `index.html`、`src/`、`public/` 和 `version.json`，可直接用于静态托管。
+- `OpenInterfaceMark-V1.0.2-site.zip`：压缩包根目录含 `index.html`、`src/`、`public/`、`LICENSE` 和 `version.json`，可直接用于静态托管。
 - `SHA256SUMS.txt`：发布压缩包的 SHA-256 校验值。
 
 其他版本使用对应标签命名。GitHub Release 页面同时提供该标签的源码下载。日常部署和版本发布共用生产并发组，避免两个工作流同时写入站点。
@@ -165,9 +171,10 @@ Release 工作流先测试、构建，再将同一份 `dist/` 部署到 Pages，
 | `index.html` | 工作台、属性面板和弹窗结构 |
 | `src/app.js` | 界面、鼠标/键盘手势、文件导入导出、字体和撤销历史 |
 | `src/core.js` | 坐标变换、区域边界、引线、SVG 与项目格式校验 |
+| `src/i18n.js` | 显式中英界面文案、语言状态与 URL 入口，不修改项目数据 |
 | `src/styles.css` | 桌面三栏工作台、窄屏布局与浅绿配色 |
 | `scripts/serve.mjs` / `scripts/build.mjs` | 无依赖 HTTP 服务器与静态构建 |
 | `tests/core.test.mjs` | 坐标、引线、图片变换、项目往返及 SVG 导出回归 |
 | `tests/interaction.test.mjs` | 使用 Node VM 执行实际事件处理器的键盘与指针交互回归 |
 
-当前自动测试共 **32 项**。交互测试使用轻量 DOM、指针捕获与坐标矩阵替身，不能代替浏览器实际操作与导出文件检查。浏览器检查范围及已知限制见 [验证记录](docs/verification.md)；开发与发布约定见 [AGENTS.md](AGENTS.md)。
+自动测试覆盖核心标注、交互历史和语言切换。交互测试使用轻量 DOM、指针捕获与坐标矩阵替身，不能代替浏览器实际操作与导出文件检查。浏览器检查范围及已知限制见 [验证记录](docs/verification.md)；开发与发布约定见 [AGENTS.md](AGENTS.md)。
